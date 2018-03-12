@@ -1,8 +1,9 @@
 var express = require("express");
 const knex = require("../utils/connection");
 var router = express.Router();
-const model = require("../model/database");
+const model = require("../model/assignment");
 const helper = require("../controllers/helper");
+var CronJob = require("cron").CronJob;
 // const Sequelize = require("sequelize");
 // const sequelize = new Sequelize(
 //   "postgres://postgres:cmugrader@127.0.0.1:5432/grader"
@@ -25,6 +26,17 @@ var curryN = require("lodash/fp/curryN");
 
 /* GET home page. */
 router.get("/", async function(req, res, next) {
+  // new CronJob(
+  //   "* * * * * *",
+  //   function() {
+  //     console.log("You will see this message every second");
+  //   },
+  //   null,
+  //   true,
+  //   "Asia/Bangkok"
+  // );
+  // const data = model.CreatePDFdetailAssignment();
+  res.send("eiei");
   // var object = {
   //   a: 1,
   //   b: 3,
@@ -37,24 +49,24 @@ router.get("/", async function(req, res, next) {
   // res.send(_.isEqual(object, other));
   // const data = await model.addDbNameintoServer("eieieeiie212111ei12222");
   // res.send(data);
-  var knexGrader = knex.pgGrader;
-  var startDate = new Date();
-  knexGrader
-    .raw("select dbname AS name                            from databases;")
-    //select * from databases;
-    // .raw("delete from databases where dbid=258 returning *;")
-    .timeout(1000)
-    .then(data => {
-      var endDate = new Date();
-      console.log(endDate);
-      res.send({ data: data, time: endDate - startDate });
-    })
-    .catch(error => {
-      // If we get here, that means that neither the 'Old Books' catalogues insert,
-      // nor any of the books inserts will have taken place.
-      console.error(error);
-      res.send(error);
-    });
+  // var knexGrader = knex.pgGrader;
+  // var startDate = new Date();
+  // knexGrader
+  //   .raw("select dbname AS name                            from databases;")
+  //   //select * from databases;
+  //   // .raw("delete from databases where dbid=258 returning *;")
+  //   .timeout(1000)
+  //   .then(data => {
+  //     var endDate = new Date();
+  //     console.log(endDate);
+  //     res.send({ data: data, time: endDate - startDate });
+  //   })
+  //   .catch(error => {
+  //     // If we get here, that means that neither the 'Old Books' catalogues insert,
+  //     // nor any of the books inserts will have taken place.
+  //     console.error(error);
+  //     res.send(error);
+  //   });
   // const data = await helper.writeAssignmentSubmitFile(1, 20);
   // const pgp = require("pg-promise")({
   //   // Initialization Options
