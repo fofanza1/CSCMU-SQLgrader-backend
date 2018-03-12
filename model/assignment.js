@@ -159,9 +159,8 @@ const CreatePDFdetailAssignment = () => {
 const getDataAssignment = () => {
   return new Promise((resolve, reject) => {
     knex
-      .pgGrader()
+      .pgGrader("assignment_header")
       .select()
-      .table("assignment_header")
       .then(data => {
         resolve(data);
       })
