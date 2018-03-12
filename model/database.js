@@ -40,7 +40,7 @@ const getDatabaseAssignment = async () => {
       .select()
       .table("databases")
       .then(data => {
-        dataGrader.destory();
+        // dataGrader.destory();
         resolve(data);
         // reject(data);
       })
@@ -73,8 +73,8 @@ const createDatabaseAllDbms = dbName => {
       await knex.mssqlAdmin.raw("CREATE DATABASE " + dbName);
       resolve("Successful Create Database");
     } catch (error) {
-      dropAllDatabase(dbName);
-      reject("Error Create Database, DROP ALL DATABASE");
+      // dropAllDatabase(dbName);
+      reject({ message: "Error Create Database", err: error });
     }
   });
 };

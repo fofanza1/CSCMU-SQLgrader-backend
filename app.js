@@ -13,16 +13,16 @@ var cors = require("cors");
 var app = express();
 var kue = require("kue");
 kue.app.listen(3001);
-queue = kue.createQueue();
-for (i = 0; i < 3; i++) {
-  var job = queue
-    .create("data-test", {
-      title: "test title",
-      data: "eiei",
-      data2: "eiei2"
-    })
-    .save();
-}
+// queue = kue.createQueue();
+// for (i = 0; i < 3; i++) {
+//   var job = queue
+//     .create("data-test", {
+//       title: "test title",
+//       data: "eiei",
+//       data2: "eiei2"
+//     })
+//     .save();
+// }
 
 // queue.on("job complete", function(id) {
 //   kue.Job.get(id, function(err, job) {

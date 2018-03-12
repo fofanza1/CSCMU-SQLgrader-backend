@@ -1,19 +1,18 @@
-const successResult = (messageResult) => {
-    return {
-        'status': 200,
-        'messageResult': messageResult
-    }
+const successResult = messageResult => {
+  return {
+    status: 200,
+    messageResult: messageResult
+  };
 };
 
-const errorResult = (errorResult, errorMessageResult) => {
-    return {
-        'status': 500,
-        'errorResult': errorResult,
-        'messageResult': errorMessageResult
-    }
-}
+const errorResult = errorResult => {
+  return {
+    status: 500,
+    errorResult: errorResult
+  };
+};
 
 module.exports = {
-    successResult,
-    errorResult
-}
+  successResult,
+  errorResult
+};

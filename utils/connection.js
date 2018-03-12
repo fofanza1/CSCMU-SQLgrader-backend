@@ -26,7 +26,7 @@ const pgAdmin = require("knex")({
   connection: {
     host: "127.0.0.1",
     user: "postgres",
-    password: "cmugrader",
+    password: "cmusqlgrader",
     database: "postgres"
   }
 });
@@ -37,7 +37,7 @@ const pgCustom = databaseName => {
     connection: {
       host: "127.0.0.1",
       user: "postgres",
-      password: "cmugrader",
+      password: "cmusqlgrader",
       database: databaseName
     }
   });
@@ -48,7 +48,7 @@ const pgGrader = require("knex")({
   connection: {
     host: "127.0.0.1",
     user: "postgres",
-    password: "cmugrader",
+    password: "cmusqlgrader",
     database: "grader",
     searchPath: ["knex", "public"]
   }

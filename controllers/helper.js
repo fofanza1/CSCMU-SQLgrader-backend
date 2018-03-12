@@ -1,5 +1,6 @@
 const fs = require("fs");
 const multer = require("multer");
+const model = require("../model/database");
 var prepend = require("prepend");
 var readline = require("readline");
 
@@ -45,6 +46,8 @@ const searchAndEditDBFile = () => {
           /[&\[\]\/\\#,+()$~%.'";`:*?<>{}]/g,
           ""
         );
+        // const dataAssignment = model.getDatabaseAssignment();
+        // if(dbName.in)
       } else if (lineSplit.length > 1) {
         if (lineSplit[1].toLowerCase() !== "database") {
           await myInterface.output.write(line + "\n");

@@ -33,9 +33,9 @@ var upload = multer({ storage: storage });
 router.post("/createdb", upload.single("databasefile"), async (req, res) => {
   const dataFile = await helper.searchAndEditDBFile();
   const dbName = dataFile.dbName;
-  const dbms = await req.body.dbms;
   try {
     // await helper.addUseDatabaseInFileSQL(dbName, dbms);
+    const dbms = await req.body.dbms;
     const pathDb = "databases/" + dbName + "/";
     const fileName = "original-" + dbName + ".sql";
     const fileNameWithDBMS = dbms + "-" + dbName + ".sql";
@@ -58,9 +58,7 @@ router.post("/createdb", upload.single("databasefile"), async (req, res) => {
     //await controller.delFolderDatabases(dbName);
     await model.delDatabaseName(dbName);
     await model.dropAllDatabase(dbName);
-    res
-      .status(500)
-      .send(response.successResult("DROP ALL DATABASE SUCCESSFUL"));
+    res.status(500).send(response.errorResult(error));
   }
 });
 

@@ -1,4 +1,13 @@
 USE `grader`;
+
+CREATE TABLE course (
+    cid char(6) not null,
+    cname varchar(50) not null,
+    term integer,
+    year char(4)
+    primary key (cid)
+);
+
 CREATE TABLE assignment_header (
     anumber integer not null,
     aname varchar(100) not null,
@@ -22,3 +31,4 @@ CREATE TABLE question_detail (
     primary key (qid),
     foreign key (anumber) references assignment_header (anumber)
 );
+
