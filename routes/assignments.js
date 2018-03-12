@@ -1,8 +1,18 @@
 var express = require("express");
 var router = express.Router();
 const model = require("../model/assignment");
+
 var lineno = 0;
 /* GET home page. */
+router.get("/dataassignment", async function(req, res, next) {
+  try {
+    const data = await model.getDataAssignment();
+    await res.send(data);
+  } catch (error) {
+    await res.send(error);
+  }
+});
+
 router.post("/createassignment", async function(req, res, next) {
   const assignmentNumber = req.body.anumber;
   const assignmentName = req.body.aname;

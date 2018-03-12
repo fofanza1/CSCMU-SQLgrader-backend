@@ -156,10 +156,26 @@ const CreatePDFdetailAssignment = () => {
   });
 };
 
+const getDataAssignment = () => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader()
+      .select()
+      .table("assignment_header")
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
 module.exports = {
   createAssignment: createAssignment,
   creteQuestion: creteQuestion,
   sumScoreAssignment: sumScoreAssignment,
   updateScoreAssignment: updateScoreAssignment,
-  CreatePDFdetailAssignment: CreatePDFdetailAssignment
+  CreatePDFdetailAssignment: CreatePDFdetailAssignment,
+  getDataAssignment: getDataAssignment
 };
