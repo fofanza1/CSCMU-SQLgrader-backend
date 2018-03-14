@@ -1,4 +1,4 @@
-USE `EEESSSSAAAACC2`;
+USE `company`;
 
 -- remove comments on drop command if you have existing tables --------
 
@@ -14,7 +14,7 @@ USE `EEESSSSAAAACC2`;
 -- --------------------------------------
 CREATE TABLE department (
   dname        varchar(15) not null,
-  dnumber      integer(4) not null,
+  dnumber      integer not null,
   mgr_ssn       char(9) not null, 
   mgr_start_date date,
   primary key (dnumber),
@@ -31,7 +31,7 @@ INSERT INTO department VALUES ("Sales","8","555555500","1997-01-01");
 -- -------------------------------------
 
 CREATE TABLE dept_locations (
-  dnumber   integer(4) not null,
+  dnumber   integer not null,
   dlocation varchar(15) not null, 
   primary key (dnumber,dlocation),
   foreign key (dnumber) references department(dnumber)
@@ -63,7 +63,7 @@ CREATE TABLE employee (
   sex      char,
   salary   decimal(10,2),
   super_ssn char(9),
-  dno      integer(4), -- not null,
+  dno      integer, -- not null,
   primary key (ssn),
   foreign key (dno) references department (dnumber)
 );
@@ -139,9 +139,9 @@ INSERT INTO dependent VALUES ("444444402","Sam","M","1964-02-14","Spouse");
 
 CREATE TABLE project (
   pname      varchar(15) not null,
-  pnumber    integer(4) not null,
+  pnumber    integer not null,
   plocation  varchar(15),
-  dnum       integer(4) not null,
+  dnum       integer not null,
   primary key (pnumber),
   unique (pname),
   foreign key (dnum) references department(dnumber)
@@ -163,7 +163,7 @@ INSERT INTO project VALUES ("LaserPrinters","92","LasVegas","7");
 
 CREATE TABLE works_on (
   essn   char(9) not null,
-  pno    integer(4) not null,
+  pno    integer not null,
   hours  decimal(4,1) not null,
   primary key (essn,pno),
   foreign key (essn) references employee(ssn),

@@ -1,4 +1,4 @@
-USE [eieiei];
+USE [company2];
 
 -- remove comments on drop command if you have existing tables --------
 
@@ -220,5 +220,3 @@ INSERT INTO works_on VALUES ("666666613","62","10.0");
 INSERT INTO works_on VALUES ("666666613","63","10.0");
 
 -- ------------ END --------------------------
----------
-USE [eieiei];

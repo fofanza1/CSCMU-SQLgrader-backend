@@ -1,4 +1,4 @@
-USE `EEESSSSAAAAC12121C2`;
+USE `company2`;
 
 -- remove comments on drop command if you have existing tables --------
 

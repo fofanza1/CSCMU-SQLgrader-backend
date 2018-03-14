@@ -170,11 +170,29 @@ const getDataAssignment = () => {
   });
 };
 
+const getDataAssignmentById = anumber => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("assignment_header")
+      .where({
+        anumber: anumber
+      })
+      .select()
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
 module.exports = {
   createAssignment: createAssignment,
   creteQuestion: creteQuestion,
   sumScoreAssignment: sumScoreAssignment,
   updateScoreAssignment: updateScoreAssignment,
   CreatePDFdetailAssignment: CreatePDFdetailAssignment,
-  getDataAssignment: getDataAssignment
+  getDataAssignment: getDataAssignment,
+  getDataAssignmentById: getDataAssignmentById
 };

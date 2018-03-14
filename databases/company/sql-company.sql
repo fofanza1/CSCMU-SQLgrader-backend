@@ -1,4 +1,4 @@
-USE [EEESSSSAAAACC2];
+USE [company];
 
 -- remove comments on drop command if you have existing tables --------
 

@@ -1,4 +1,6 @@
-USE `test16`;
+CREATE DATABASE `eieiei3232`;
+USE `company2`;
+
 -- remove comments on drop command if you have existing tables --------
 
 -- DROP TABLE department;
