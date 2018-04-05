@@ -3,6 +3,7 @@ const exec = require("child_process").exec;
 const PDFDocument = require("pdfkit");
 const doc = new PDFDocument();
 const fs = require("fs");
+var mz = require("mz/fs");
 
 const createAssignment = (
   anumber,
@@ -35,7 +36,7 @@ const createAssignment = (
   });
 };
 
-const creteQuestion = (qnumber, anumber, qdescription, score) => {
+const createQuestion = (qnumber, anumber, qdescription, score) => {
   return new Promise((resolve, reject) => {
     // const dataGrader = knex.pgGrader;
     knex
@@ -76,6 +77,25 @@ const updateScoreAssignment = (anumber, newScore) => {
       .pgGrader("assignment_header")
       .where("anumber", anumber)
       .update("totalscore", newScore)
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const updateQuestionData = (qid, qdescription, newScore) => {
+  console.log(qid, qdescription, newScore);
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("question_detail")
+      .where("qid", qid)
+      .update({
+        qdescription: qdescription,
+        score: newScore
+      })
       .then(data => {
         resolve(data);
       })
@@ -156,10 +176,79 @@ const CreatePDFdetailAssignment = () => {
   });
 };
 
+const getDataAssignment = () => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("assignment_header")
+      .select()
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const getDataAssignmentById = anumber => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("assignment_header")
+      .where({
+        anumber: anumber
+      })
+      .select()
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const getDataQuestion = (anumber, qnumber) => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("question_detail")
+      .where({
+        anumber: anumber,
+        qnumber: qnumber
+      })
+      .select()
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const getAnswerSolution = (databaseName, solution) => {
+  return new Promise((resolve, reject) => {
+    knex
+      .mysqlCustom(databaseName)
+      .raw(`BEGIN;${solution}ROLLBACK;`)
+      .then(data => {
+        resolve(data[0][1]);
+      })
+      .catch(error => {
+        console.log(error);
+        reject(error);
+      });
+  });
+};
+
 module.exports = {
   createAssignment: createAssignment,
-  creteQuestion: creteQuestion,
+  createQuestion: createQuestion,
   sumScoreAssignment: sumScoreAssignment,
   updateScoreAssignment: updateScoreAssignment,
-  CreatePDFdetailAssignment: CreatePDFdetailAssignment
+  CreatePDFdetailAssignment: CreatePDFdetailAssignment,
+  getDataAssignment: getDataAssignment,
+  getDataAssignmentById: getDataAssignmentById,
+  getDataQuestion: getDataQuestion,
+  updateQuestionData: updateQuestionData,
+  getAnswerSolution: getAnswerSolution
 };

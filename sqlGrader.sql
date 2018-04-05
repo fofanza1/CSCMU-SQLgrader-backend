@@ -1,24 +1,42 @@
 USE `grader`;
 
-CREATE TABLE course (
-    cid char(6) not null,
+CREATE TABLE courses (
+    cid SERIAL not null,
+    ccode char(6) not null,
     cname varchar(50) not null,
-    term integer,
-    year char(4)
+    semester char(1),
+    year char(4),
     primary key (cid)
+);
+
+
+CREATE TABLE students (
+    username varchar(16) not null,
+    password varchar(100) not null,
+    studentid char(9),
+    fullname varchar(100),
+    primary key (username)
+);
+
+CREATE TABLE students_in_courses (
+    username varchar(16) not null references students (username),
+    cid integer not null references courses (cid),
+    PRIMARY KEY(username, cid)
 );
 
 CREATE TABLE assignment_header (
     anumber integer not null,
     aname varchar(100) not null,
     noofquestion integer not null,
-    startdate date,
-    duedate date,
+    startdate timestamp,
+    duedate timestamp,
     dbid integer not null,
     totalscore integer,
     astatus varchar(10) not null,
+    cid integer not null,
     primary key (anumber),
-    foreign key (dbid) references databases (dbid)
+    foreign key (dbid) references databases (dbid),
+     foreign key (cid) references course (cid)
 );
 
 CREATE TABLE question_detail (

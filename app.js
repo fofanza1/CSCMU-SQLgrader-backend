@@ -9,6 +9,9 @@ var index = require("./routes/index");
 var users = require("./routes/users");
 var databases = require("./routes/databases");
 var assignments = require("./routes/assignments");
+var tasks = require("./routes/tasks");
+var courses = require("./routes/courses");
+var students = require("./routes/students");
 var cors = require("cors");
 var app = express();
 var kue = require("kue");
@@ -65,19 +68,20 @@ dotenv.load();
 app.use(logger("dev"));
 // app.use(cors({credentials: true, origin: true}));
 // app.options('*', cors());
-var allowCrossDomain = (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:4200");
-  res.header("Access-Control-Allow-Credentials", true);
-  res.header("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "X-Requested-With, Origin, Authorization, Content-Type, Accept"
-  );
-  next();
-};
-app.use(allowCrossDomain);
+// var allowCrossDomain = (req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header("Access-Control-Allow-Credentials", true);
+//   res.header("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE");
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "X-Requested-With, Origin, Authorization, Content-Type, Accept"
+//   );
+//   next();
+// };
+// app.use(allowCrossDomain);
 // app.use(cors({credentials: true, origin: 'http://localhost:4200'}));
 // app.options('*', cors());  // enable pre-flight
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -87,6 +91,9 @@ app.use("/", index);
 app.use("/users", users);
 app.use("/databases", databases);
 app.use("/assignments", assignments);
+app.use("/tasks", tasks);
+app.use("/courses", courses);
+app.use("/students", students);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
