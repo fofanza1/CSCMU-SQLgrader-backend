@@ -55,7 +55,7 @@ const mysqlImport = dbName => {
 const pgImport = dbName => {
   return new Promise(async (resolve, reject) => {
     await exec(
-      `pgloader  mysql://root:cmugrader@localhost/${dbName} postgresql://postgres:cmugrader@localhost/${dbName}`
+      `pgloader  mysql://root:cmusqlgrader@localhost/${dbName} postgresql://postgres:cmusqlgrader@localhost/${dbName}`
     );
     await resolve(`Success of Import, ${dbName} in Postgres`);
   });

@@ -21,6 +21,19 @@ const mysqlAdmin = require("knex")({
   }
 });
 
+const mysqlCustom = databaseName => {
+  return require("knex")({
+    client: "mysql",
+    connection: {
+      host: "127.0.0.1",
+      user: "root",
+      password: "cmugrader",
+      database: databaseName,
+      multipleStatements: true
+    }
+  });
+};
+
 const pgAdmin = require("knex")({
   client: "pg",
   connection: {
@@ -39,6 +52,7 @@ const pgCustom = databaseName => {
       user: "postgres",
       password: "cmusqlgrader",
       database: databaseName
+      // multipleStatements: true
     }
   });
 };
@@ -59,5 +73,6 @@ module.exports = {
   pgAdmin,
   pgGrader,
   mssqlAdmin,
-  pgCustom
+  pgCustom,
+  mysqlCustom
 };

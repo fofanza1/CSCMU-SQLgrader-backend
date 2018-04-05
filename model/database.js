@@ -99,6 +99,23 @@ const delDatabaseName = async dbName => {
   });
 };
 
+const getDatabaseNameById = anumber => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("databases")
+      .where({
+        dbid: dbid
+      })
+      .select('db')
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
 module.exports = {
   getTableList,
   getDataTable,
@@ -106,5 +123,6 @@ module.exports = {
   addDbNameintoServer,
   createDatabaseAllDbms,
   dropAllDatabase,
-  delDatabaseName
+  delDatabaseName,
+  getDatabaseNameById
 };
