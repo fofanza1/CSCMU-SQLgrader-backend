@@ -11,6 +11,7 @@ router.post("/addcourse", async (req, res, next) => {
     const data = await model.addCourse(ccode, cname, semester, year);
     await res.status(200).send({ yes: data });
   } catch (error) {
+    console.log(error);
     await res.status(500).send(error);
   }
 });

@@ -9,6 +9,7 @@ CREATE TABLE courses (
     primary key (cid)
 );
 
+-- INSERT INTO courses (ccode,  cname, semester, year) VALUES ('204232', 'Tom B. Erichsen', '3', '2433');
 
 CREATE TABLE students (
     username varchar(16) not null,

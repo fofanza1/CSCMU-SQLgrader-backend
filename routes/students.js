@@ -2,9 +2,10 @@ var express = require("express");
 var router = express.Router();
 const model = require("../model/student");
 const controller = require("../controllers/student.js");
+const courseModel = require("../model/course");
 var jwt = require("jsonwebtoken");
 
-router.post("/addstudent", async (req, res, next) => {
+router.post("/registerstudent", async (req, res, next) => {
   const username = req.body.username;
   const password = req.body.password;
   const studentid = req.body.studentid;
@@ -37,7 +38,12 @@ router.post("/login", async (req, res, next) => {
     );
     delete data.password;
     const jwtToken = await controller.genToken(data);
-    res.status(200).send(jwtToken);
+    const courseId = await courseModel.getCoursesByUsername(username);
+    res.status(200).send({
+      token: jwtToken,
+      name: data.fullname,
+      courseid: courseId[0].cid
+    });
   } catch (error) {
     res.status(500).send("login failed");
   }

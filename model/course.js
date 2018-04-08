@@ -50,8 +50,24 @@ const deleteCourse = cid => {
   });
 };
 
+const getCoursesByUsername = username => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("students_in_courses")
+      .where("username", username)
+      .select("cid")
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
 module.exports = {
   addCourse: addCourse,
   viewAllCourse: viewAllCourse,
-  deleteCourse: deleteCourse
+  deleteCourse: deleteCourse,
+  getCoursesByUsername: getCoursesByUsername
 };
