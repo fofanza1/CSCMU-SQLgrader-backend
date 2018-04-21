@@ -41,7 +41,7 @@ const searchAndEditDBFile = () => {
     await myInterface.on("line", async line => {
       var lineSplit = await line.split(" ");
       if ((await lineSplit[0].toLowerCase()) === "use") {
-        await myInterface.output.write(line + "\n");
+        await myInterface.output.write(line.toLowerCase() + "\n");
         dbName = await lineSplit[1].replace(
           /[&\[\]\/\\#,+()$~%.'";`:*?<>{}]/g,
           ""
@@ -58,7 +58,7 @@ const searchAndEditDBFile = () => {
     });
     await myInterface.on("close", async () => {
       console.log("----end-----");
-      await resolve({ dbName: dbName });
+      await resolve({ dbName: dbName.toLowerCase() });
     });
   });
 };

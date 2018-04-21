@@ -68,12 +68,13 @@ const addDbNameintoServer = dabaseName => {
 const createDatabaseAllDbms = dbName => {
   return new Promise(async (resolve, reject) => {
     try {
+      console.log(dbName);
       await knex.mysqlAdmin.raw("CREATE DATABASE " + dbName);
       await knex.pgAdmin.raw("CREATE DATABASE " + dbName);
       await knex.mssqlAdmin.raw("CREATE DATABASE " + dbName);
       resolve("Successful Create Database");
     } catch (error) {
-      // dropAllDatabase(dbName);
+      dropAllDatabase(dbName);
       reject({ message: "Error Create Database", err: error });
     }
   });
@@ -106,7 +107,7 @@ const getDatabaseNameById = anumber => {
       .where({
         dbid: dbid
       })
-      .select('db')
+      .select("db")
       .then(data => {
         resolve(data);
       })

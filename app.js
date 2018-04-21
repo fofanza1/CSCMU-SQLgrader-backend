@@ -14,8 +14,12 @@ var courses = require("./routes/courses");
 var students = require("./routes/students");
 var cors = require("cors");
 var app = express();
-var kue = require("kue");
-kue.app.listen(3001);
+var types = require("pg").types;
+types.setTypeParser(20, function(val) {
+  return parseInt(val);
+});
+// var kue = require("kue");
+// kue.app.listen(3001);
 // queue = kue.createQueue();
 // for (i = 0; i < 3; i++) {
 //   var job = queue
@@ -66,22 +70,22 @@ dotenv.load();
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger("dev"));
-// app.use(cors({credentials: true, origin: true}));
-// app.options('*', cors());
-// var allowCrossDomain = (req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Credentials", true);
-//   res.header("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE");
-//   res.header(
-//     "Access-Control-Allow-Headers",
-//     "X-Requested-With, Origin, Authorization, Content-Type, Accept"
-//   );
-//   next();
-// };
-// app.use(allowCrossDomain);
+app.use(cors({ credentials: true, origin: true }));
+app.options("*", cors());
+var allowCrossDomain = (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://localhost:4200");
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With, Origin, Authorization, Content-Type, Accept"
+  );
+  next();
+};
+app.use(allowCrossDomain);
 // app.use(cors({credentials: true, origin: 'http://localhost:4200'}));
 // app.options('*', cors());  // enable pre-flight
-app.use(cors());
+// app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cookieParser());

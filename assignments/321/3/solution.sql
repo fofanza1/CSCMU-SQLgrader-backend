@@ -1,1 +1,0 @@
-select dname from department;

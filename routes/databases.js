@@ -32,7 +32,8 @@ var upload = multer({ storage: storage });
 
 router.post("/createdb", upload.single("databasefile"), async (req, res) => {
   const dataFile = await helper.searchAndEditDBFile();
-  const dbName = dataFile.dbName;
+  const dbName = await dataFile.dbName.toLowerCase();
+  // console.log(dbName);
   try {
     // await helper.addUseDatabaseInFileSQL(dbName, dbms);
     const dbms = await req.body.dbms;

@@ -1,11 +1,15 @@
 const knex = require("../utils/connection");
 const exec = require("child_process").exec;
 const PDFDocument = require("pdfkit");
+var schedule = require("node-schedule");
 const doc = new PDFDocument();
 const fs = require("fs");
 var mz = require("mz/fs");
+var _ = require("lodash");
+var moment = require("moment");
 
 const createAssignment = (
+  cid,
   anumber,
   aname,
   noofquestion,
@@ -18,6 +22,7 @@ const createAssignment = (
     knex
       .pgGrader("assignment_header")
       .insert({
+        cid: cid,
         anumber: anumber,
         aname: aname,
         noofquestion: noofquestion,
@@ -27,7 +32,9 @@ const createAssignment = (
         totalscore: 0,
         astatus: "pedding"
       })
+      .returning("aid")
       .then(data => {
+        console.log(data);
         resolve(data);
       })
       .catch(error => {
@@ -36,14 +43,14 @@ const createAssignment = (
   });
 };
 
-const createQuestion = (qnumber, anumber, qdescription, score) => {
+const createQuestion = (qnumber, aid, qdescription, score) => {
   return new Promise((resolve, reject) => {
     // const dataGrader = knex.pgGrader;
     knex
       .pgGrader("question_detail")
       .insert({
         qnumber: qnumber,
-        anumber: anumber,
+        aid: aid,
         qdescription: qdescription,
         score: score
       })
@@ -56,11 +63,11 @@ const createQuestion = (qnumber, anumber, qdescription, score) => {
   });
 };
 
-const sumScoreAssignment = anumber => {
+const sumScoreAssignment = aid => {
   return new Promise((resolve, reject) => {
     knex
       .pgGrader("question_detail")
-      .where("anumber", anumber)
+      .where("aid", aid)
       .sum("score")
       .then(data => {
         resolve(data);
@@ -71,11 +78,11 @@ const sumScoreAssignment = anumber => {
   });
 };
 
-const updateScoreAssignment = (anumber, newScore) => {
+const updateScoreAssignment = (aid, newScore) => {
   return new Promise((resolve, reject) => {
     knex
       .pgGrader("assignment_header")
-      .where("anumber", anumber)
+      .where("aid", aid)
       .update("totalscore", newScore)
       .then(data => {
         resolve(data);
@@ -87,7 +94,6 @@ const updateScoreAssignment = (anumber, newScore) => {
 };
 
 const updateQuestionData = (qid, qdescription, newScore) => {
-  console.log(qid, qdescription, newScore);
   return new Promise((resolve, reject) => {
     knex
       .pgGrader("question_detail")
@@ -176,10 +182,12 @@ const CreatePDFdetailAssignment = () => {
   });
 };
 
-const getDataAssignment = () => {
+const getDataAssignment = cid => {
   return new Promise((resolve, reject) => {
     knex
       .pgGrader("assignment_header")
+      .join("databases", "assignment_header.dbid", "=", "databases.dbid")
+      .where("cid", cid)
       .select()
       .then(data => {
         resolve(data);
@@ -190,15 +198,18 @@ const getDataAssignment = () => {
   });
 };
 
-const getDataAssignmentById = anumber => {
+const getDataAssignmentByNumber = (cid, anumber) => {
   return new Promise((resolve, reject) => {
     knex
       .pgGrader("assignment_header")
+      .join("databases", "assignment_header.dbid", "=", "databases.dbid")
       .where({
+        cid: cid,
         anumber: anumber
       })
       .select()
       .then(data => {
+        console.log(data);
         resolve(data);
       })
       .catch(error => {
@@ -207,12 +218,12 @@ const getDataAssignmentById = anumber => {
   });
 };
 
-const getDataQuestion = (anumber, qnumber) => {
+const getDataQuestion = (aid, qnumber) => {
   return new Promise((resolve, reject) => {
     knex
       .pgGrader("question_detail")
       .where({
-        anumber: anumber,
+        aid: aid,
         qnumber: qnumber
       })
       .select()
@@ -225,18 +236,150 @@ const getDataQuestion = (anumber, qnumber) => {
   });
 };
 
-const getAnswerSolution = (databaseName, solution) => {
+const getAnswerSolutionMysql = (databaseName, solution) => {
   return new Promise((resolve, reject) => {
+    console.log(solution);
+    if (solution === "") {
+      resolve("");
+    }
     knex
       .mysqlCustom(databaseName)
       .raw(`BEGIN;${solution}ROLLBACK;`)
       .then(data => {
-        resolve(data[0][1]);
+        // console.log(JSON.parse(JSON.stringify(sol)));
+        for (let sol of data[0]) {
+          if (_.isArray(sol)) {
+            resolve(sol);
+          }
+        }
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const getAnswerSolutionPg = (databaseName, solution) => {
+  return new Promise((resolve, reject) => {
+    if (solution === "") {
+      resolve("");
+    }
+    knex
+      .pgCustom(databaseName)
+      .raw(`BEGIN;${solution}ROLLBACK;`)
+      .then(data => {
+        data.shift(); // Removes the first element from an array and returns only that element.
+        data.pop(); // Removes the last element from an array and returns only that element.
+        for (let sol of data) {
+          if (sol.rows.length > 0) {
+            resolve(sol.rows);
+          }
+        }
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const getAnswerSolutionMssql = (databaseName, solution) => {
+  return new Promise((resolve, reject) => {
+    if (solution === "") {
+      resolve("");
+    }
+    knex
+      .mssqlCustom(databaseName)
+      .raw(`BEGIN TRANSACTION;${solution}ROLLBACK;`)
+      .then(data => {
+        resolve(data);
       })
       .catch(error => {
         console.log(error);
+        resolve("");
+      });
+  });
+};
+
+const getAssignmentNumberByAssignmentId = aid => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("assignment_header")
+      .where("aid", aid)
+      .select("anumber")
+      .then(data => {
+        resolve(data[0].anumber);
+      })
+      .catch(error => {
         reject(error);
       });
+  });
+};
+
+const getAssignmentByAssignmentId = aid => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("assignment_header")
+      .where("aid", aid)
+      .select()
+      .then(data => {
+        resolve(data[0]);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const getScoresByAssignmentId = aid => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("question_detail")
+      .where({ aid: aid })
+      .select("score")
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const updateStatusAssignment = (aid, newStatus) => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("assignment_header")
+      .where("aid", aid)
+      .update("astatus", newStatus)
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const setOpeningAssignemnt = (aid, date) => {
+  return new Promise(async (resolve, reject) => {
+    const name = "opening" + aid;
+    // const dateUnix = moment(date).format();
+    // console.log(dateUnix);
+    var j = await schedule.scheduleJob(name, date, async () => {
+      // console.log("\n" + aid + "\n eiei");
+      await updateStatusAssignment(aid, "opening");
+    });
+    resolve({ msg: "set Start Date" });
+  });
+};
+
+const setClosedAssignemnt = (aid, date) => {
+  return new Promise(async (resolve, reject) => {
+    const name = "closed" + aid;
+    var j = await schedule.scheduleJob(name, date, async () => {
+      await updateStatusAssignment(aid, "closed");
+    });
+    resolve({ msg: "set Due Date" });
   });
 };
 
@@ -247,8 +390,16 @@ module.exports = {
   updateScoreAssignment: updateScoreAssignment,
   CreatePDFdetailAssignment: CreatePDFdetailAssignment,
   getDataAssignment: getDataAssignment,
-  getDataAssignmentById: getDataAssignmentById,
+  getDataAssignmentByNumber: getDataAssignmentByNumber,
   getDataQuestion: getDataQuestion,
   updateQuestionData: updateQuestionData,
-  getAnswerSolution: getAnswerSolution
+  getAnswerSolutionMysql: getAnswerSolutionMysql,
+  getAnswerSolutionPg: getAnswerSolutionPg,
+  getAnswerSolutionMssql: getAnswerSolutionMssql,
+  getAssignmentNumberByAssignmentId: getAssignmentNumberByAssignmentId,
+  getScoresByAssignmentId: getScoresByAssignmentId,
+  setOpeningAssignemnt: setOpeningAssignemnt,
+  setClosedAssignemnt: setClosedAssignemnt,
+  getAssignmentByAssignmentId: getAssignmentByAssignmentId,
+  updateStatusAssignment: updateStatusAssignment
 };

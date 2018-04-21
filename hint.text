@@ -1,0 +1,2 @@
+Decimal count ของ postgres จาก return เป็น string ต้องใช้ฟังก์ชัน cast
+select cast(salary as float) from employee;

@@ -1,15 +1,14 @@
 const knex = require("../utils/connection");
 const exec = require("child_process").exec;
 
-const addStudent = (username, password, studentid, fullname) => {
+const addStudent = (studentid, password, fullname) => {
   return new Promise((resolve, reject) => {
     // const dataGrader = knex.pgGrader;
     knex
       .pgGrader("students")
       .insert({
-        username: username,
-        password: password,
         studentid: studentid,
+        password: password,
         fullname: fullname
       })
       .then(data => {
@@ -21,13 +20,13 @@ const addStudent = (username, password, studentid, fullname) => {
   });
 };
 
-const addStudentInCourse = (username, cid) => {
+const addStudentInCourse = (studentid, cid) => {
   return new Promise((resolve, reject) => {
     // const dataGrader = knex.pgGrader;
     knex
       .pgGrader("students_in_courses")
       .insert({
-        username: username,
+        studentid: studentid,
         cid: cid
       })
       .then(data => {
@@ -39,11 +38,11 @@ const addStudentInCourse = (username, cid) => {
   });
 };
 
-const getDataStudent = username => {
+const getDataStudent = studentid => {
   return new Promise((resolve, reject) => {
     knex
       .pgGrader("students")
-      .where("username", username)
+      .where("studentid", studentid)
       .select()
       .then(data => {
         console.log(data);

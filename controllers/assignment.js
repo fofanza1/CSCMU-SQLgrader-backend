@@ -1,23 +1,24 @@
 const model = require("../model/assignment");
 var fs = require("fs");
 var mz = require("mz/fs");
+var moment = require("moment");
 const util = require("util");
 const writeFile = util.promisify(fs.writeFile);
 const readFile = util.promisify(fs.readFile);
 var officegen = require("officegen");
 var _ = require("lodash");
 
-const initQuestion = async (assignmentNumber, noofQuestion) => {
+const initQuestion = async (assignmentId, noofQuestion) => {
   return new Promise(async (resolve, reject) => {
     try {
       var dir;
       var i;
       for (i = 1; i <= noofQuestion; i++) {
-        dir = "./assignments/" + assignmentNumber + "/" + i;
+        dir = "./assignments/" + assignmentId + "/" + i;
         if (!mz.existsSync(dir)) {
           await mz.mkdirSync(dir);
           await writeFile(dir + "/solution.sql", "");
-          await writeFile(dir + "/answer.json", "{}");
+          await writeFile(dir + "/answer.json", "[{}]");
         }
       }
 
@@ -31,7 +32,7 @@ const initQuestion = async (assignmentNumber, noofQuestion) => {
   });
 };
 
-const getSoution = (assignmentNumber, questionNumber) => {
+const getSolution = (assignmentNumber, questionNumber) => {
   return new Promise(async (resolve, reject) => {
     dir = "./assignments/" + assignmentNumber + "/" + questionNumber;
     try {
@@ -58,9 +59,19 @@ const getAnswer = async (assignmentNumber, questionNumber) => {
       const file = await mz
         .readFile(dir + "/answer.json", "utf8")
         .then(contents => {
-          var data = contents;
-          // console.log(data);
-          resolve({ answer: JSON.parse(data) });
+          var data = JSON.parse(contents);
+          // console.log(data[0]);
+          if (typeof data[0] !== "object") {
+            resolve({ answer: JSON.parse(data[0]) });
+          } else {
+            if (_.isEmpty(data[0])) {
+              resolve({ answer: data[0] });
+            } else {
+              resolve({ answer: JSON.stringify(data) });
+            }
+          }
+
+          // resolve({ answer: data[0] });
         })
         .catch(err => console.error(err));
     } catch (error) {
@@ -69,16 +80,19 @@ const getAnswer = async (assignmentNumber, questionNumber) => {
   });
 };
 
-const genDocx = anumber => {
+const genDocx = (courseData, anumber) => {
   return new Promise(async (resolve, reject) => {
-    // console.log("eiei3");
     var docx = officegen("docx");
-    const dataAssignment = await model.getDataAssignmentById(anumber);
-    // console.log(dataAssignment);
+    const dataAssignment = await model.getDataAssignmentByNumber(
+      courseData.cid,
+      anumber
+    );
     // console.log("eiei2");
     var header = await docx.getHeader().createP({ align: "center" });
     await header.addText(
-      `204222 (2/2560) \t Fundamentals of Database Systems \t Assignment#${anumber}`,
+      `${courseData.ccode} (${courseData.semester}/${courseData.year}) \t ${
+        courseData.cname
+      } \t Assignment#${anumber}`,
       {
         font_face: "TH SarabunPSK",
         bold: true,
@@ -127,7 +141,7 @@ const genDocx = anumber => {
 
     for (i = 1; i <= dataAssignment[0].noofquestion; i++) {
       var pObj = docx.createP();
-      var dataQustion = await model.getDataQuestion(anumber, i);
+      var dataQustion = await model.getDataQuestion(dataAssignment[0].aid, i);
       await pObj.addText(
         `${i}). (${dataQustion[0].score} คะแนน) ${dataQustion[0].qdescription}`,
         {
@@ -137,7 +151,7 @@ const genDocx = anumber => {
       );
     }
     var out = await mz.createWriteStream(
-      `./assignments/${anumber}/problem.docx`
+      `./assignments/${dataAssignment[0].aid}/problem.docx`
     );
     console.log("out");
     await docx.generate(out, {
@@ -158,10 +172,10 @@ const genDocx = anumber => {
   });
 };
 
-const genSubmitFile = (assignmentNumber, noofQuestion) => {
+const genSubmitFile = (assignmentId, assignmentNumber, noofQuestion) => {
   return new Promise(async (resolve, reject) => {
     var wstream = await fs.createWriteStream(
-      `./assignments/${assignmentNumber}/submitFile.sql`
+      `./assignments/${assignmentId}/submitFile.sql`
     );
     await wstream.write(
       `---------Assignment#${assignmentNumber}----------\n\n`
@@ -175,10 +189,54 @@ const genSubmitFile = (assignmentNumber, noofQuestion) => {
   });
 };
 
+const checkDataBeforeOpening = (aid, noofquestion) => {
+  return new Promise(async (resolve, reject) => {
+    var allSol = [];
+    for (let index = 1; index <= noofquestion; index++) {
+      var dataSol = await getSolution(aid, index);
+      allSol.push(dataSol.solution);
+    }
+
+    if (allSol.includes("")) {
+      resolve({ yes: "Yes" });
+    } else {
+      var dataAssignment = await model.getAssignmentByAssignmentId(aid);
+      var startDate = moment(dataAssignment.startdate).format(
+        "MMMM Do YYYY, h:mm:ss"
+      );
+      var dueDate = moment(dataAssignment.duedate).format(
+        "MMMM Do YYYY, h:mm:ss"
+      );
+      var DateNow = moment().format("MMMM Do YYYY, h:mm:ss");
+      if (DateNow < startDate) {
+        const setStartDate = await model.setOpeningAssignemnt(
+          aid,
+          dataAssignment.startdate
+        );
+        const setDueDate = await model.setClosedAssignemnt(
+          aid,
+          dataAssignment.duedate
+        );
+        console.log("1 ", setStartDate, setDueDate);
+      } else if (startDate <= DateNow && DateNow <= dueDate) {
+        const setOpening = await model.updateStatusAssignment(aid, "opening");
+        const setDueDate = await model.setClosedAssignemnt(
+          aid,
+          dataAssignment.duedate
+        );
+      } else {
+        const setOpening = await model.updateStatusAssignment(aid, "closed");
+      }
+      resolve({ yes: "Yes" });
+    }
+  });
+};
+
 module.exports = {
   initQuestion: initQuestion,
-  getSoution: getSoution,
+  getSolution: getSolution,
   getAnswer: getAnswer,
   genDocx: genDocx,
-  genSubmitFile: genSubmitFile
+  genSubmitFile: genSubmitFile,
+  checkDataBeforeOpening: checkDataBeforeOpening
 };
