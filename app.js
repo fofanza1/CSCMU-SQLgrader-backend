@@ -15,6 +15,7 @@ var students = require("./routes/students");
 var scores = require("./routes/scores");
 var cors = require("cors");
 var app = express();
+
 var types = require("pg").types;
 types.setTypeParser(20, function(val) {
   return parseInt(val);
