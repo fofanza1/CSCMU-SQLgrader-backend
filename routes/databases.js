@@ -32,9 +32,11 @@ var upload = multer({ storage: storage });
 
 router.post("/createdb", upload.single("databasefile"), async (req, res) => {
   const dataFile = await helper.searchAndEditDBFile();
-  const dbName = dataFile.dbName;
+  const dbName = await dataFile.dbName.toLowerCase();
+  console.log(dbName);
   try {
     // await helper.addUseDatabaseInFileSQL(dbName, dbms);
+    const checkExist = await model.checkExist(dbName);
     const dbms = await req.body.dbms;
     const pathDb = "databases/" + dbName + "/";
     const fileName = "original-" + dbName + ".sql";
@@ -56,8 +58,8 @@ router.post("/createdb", upload.single("databasefile"), async (req, res) => {
   } catch (error) {
     console.log(error);
     //await controller.delFolderDatabases(dbName);
-    await model.delDatabaseName(dbName);
-    await model.dropAllDatabase(dbName);
+    // await model.delDatabaseName(dbName);
+    // await model.dropAllDatabase(dbName);
     res.status(500).send(response.errorResult(error));
   }
 });

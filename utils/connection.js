@@ -3,6 +3,8 @@
 //     connection: 'postgres://postgres:cmusqlgrader@localhost'
 // });
 
+var moment = require("moment");
+
 const mssqlAdmin = require("knex")({
   client: "mssql",
   connection: {
@@ -21,6 +23,43 @@ const mysqlAdmin = require("knex")({
   }
 });
 
+const mysqlCustom = databaseName => {
+  return require("knex")({
+    client: "mysql",
+    connection: {
+      host: "127.0.0.1",
+      user: "root",
+      password: "cmugrader",
+      database: databaseName,
+      multipleStatements: true
+      // typeCast: function(field, next) {
+      //   if (field.type == "DATE") {
+      //     return moment(
+      //       moment(field.string()).format("YYYY-MM-DD")
+      //     ).toISOString();
+      //   }
+      //   return next();
+      // }
+    },
+    pool: { min: 0, max: 100 }
+  });
+};
+
+const mssqlCustom = databaseName => {
+  return require("knex")({
+    client: "mssql",
+    connection: {
+      host: "127.0.0.1",
+      user: "SA",
+      password: "CMUsqlgrader1",
+      database: databaseName,
+      multipleStatements: true,
+      timezone: "Asia/Bangkok"
+    },
+    pool: { min: 0, max: 100 }
+  });
+};
+
 const pgAdmin = require("knex")({
   client: "pg",
   connection: {
@@ -38,8 +77,10 @@ const pgCustom = databaseName => {
       host: "127.0.0.1",
       user: "postgres",
       password: "cmusqlgrader",
-      database: databaseName
-    }
+      database: databaseName,
+      multipleStatements: true
+    },
+    pool: { min: 0, max: 100 }
   });
 };
 
@@ -59,5 +100,7 @@ module.exports = {
   pgAdmin,
   pgGrader,
   mssqlAdmin,
-  pgCustom
+  pgCustom,
+  mysqlCustom,
+  mssqlCustom
 };

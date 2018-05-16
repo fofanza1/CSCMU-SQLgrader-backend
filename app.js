@@ -9,10 +9,18 @@ var index = require("./routes/index");
 var users = require("./routes/users");
 var databases = require("./routes/databases");
 var assignments = require("./routes/assignments");
+var tasks = require("./routes/tasks");
+var courses = require("./routes/courses");
+var students = require("./routes/students");
+var scores = require("./routes/scores");
 var cors = require("cors");
 var app = express();
-var kue = require("kue");
-kue.app.listen(3001);
+var types = require("pg").types;
+types.setTypeParser(20, function(val) {
+  return parseInt(val);
+});
+// var kue = require("kue");
+// kue.app.listen(3001);
 // queue = kue.createQueue();
 // for (i = 0; i < 3; i++) {
 //   var job = queue
@@ -63,8 +71,8 @@ dotenv.load();
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger("dev"));
-// app.use(cors({credentials: true, origin: true}));
-// app.options('*', cors());
+app.use(cors({ credentials: true, origin: true }));
+app.options("*", cors());
 var allowCrossDomain = (req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://localhost:4200");
   res.header("Access-Control-Allow-Credentials", true);
@@ -78,6 +86,7 @@ var allowCrossDomain = (req, res, next) => {
 app.use(allowCrossDomain);
 // app.use(cors({credentials: true, origin: 'http://localhost:4200'}));
 // app.options('*', cors());  // enable pre-flight
+// app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -87,6 +96,10 @@ app.use("/", index);
 app.use("/users", users);
 app.use("/databases", databases);
 app.use("/assignments", assignments);
+app.use("/tasks", tasks);
+app.use("/courses", courses);
+app.use("/students", students);
+app.use("/scores", scores);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

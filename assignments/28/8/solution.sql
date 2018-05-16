@@ -1,0 +1,1 @@
+SELECT O.OrderDate, P.ProductName, SUM( OD.QuantityOrdered ) AS Total_Quantity FROM products P, orders O, orderdetails OD WHERE P.productCode = OD.productCode AND OD.orderNumber = O.orderNumber AND O.OrderDate >= '2005-01-01' AND O.OrderDate < '2005-01-10' GROUP BY O.OrderDate, P.ProductName ORDER BY SUM(OD.QuantityOrdered);

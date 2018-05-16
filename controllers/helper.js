@@ -41,7 +41,7 @@ const searchAndEditDBFile = () => {
     await myInterface.on("line", async line => {
       var lineSplit = await line.split(" ");
       if ((await lineSplit[0].toLowerCase()) === "use") {
-        await myInterface.output.write(line + "\n");
+        await myInterface.output.write(line.toLowerCase() + "\n");
         dbName = await lineSplit[1].replace(
           /[&\[\]\/\\#,+()$~%.'";`:*?<>{}]/g,
           ""
@@ -49,6 +49,8 @@ const searchAndEditDBFile = () => {
         // const dataAssignment = model.getDatabaseAssignment();
         // if(dbName.in)
       } else if (lineSplit.length > 1) {
+        line = line.replace('"0000-00-00"', "NULL");
+        line = line.replace("'0000-00-00'", "NULL");
         if (lineSplit[1].toLowerCase() !== "database") {
           await myInterface.output.write(line + "\n");
         }
@@ -58,7 +60,7 @@ const searchAndEditDBFile = () => {
     });
     await myInterface.on("close", async () => {
       console.log("----end-----");
-      await resolve({ dbName: dbName });
+      await resolve({ dbName: dbName.toLowerCase() });
     });
   });
 };

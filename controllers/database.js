@@ -55,9 +55,15 @@ const mysqlImport = dbName => {
 const pgImport = dbName => {
   return new Promise(async (resolve, reject) => {
     await exec(
-      `pgloader  mysql://root:cmugrader@localhost/${dbName} postgresql://postgres:cmugrader@localhost/${dbName}`
+      `pgloader  mysql://root:cmugrader@localhost/${dbName} postgresql://postgres:cmusqlgrader@localhost/${dbName}`,
+      async (err, stdout, stderror) => {
+        if (err) {
+          console.log("eiei ", err);
+          await reject({ error: err, stderror: stderror });
+        }
+        await resolve(`Success of Import, ${dbName} in Postgres`);
+      }
     );
-    await resolve(`Success of Import, ${dbName} in Postgres`);
   });
 };
 
@@ -66,7 +72,7 @@ const mssqlImport = dbName => {
     await exec(
       `sqlcmd -S localhost -U SA -P CMUsqlgrader1 -i databases/${dbName}/sql-${dbName}.sql`,
       async (err, stdout, stderror) => {
-        console.log(stdout, err, stderror);
+        console.log({ std: stdout, error: err, stderror: stderror });
         if (err) {
           await reject({ error: err, stderror: stderror });
         }

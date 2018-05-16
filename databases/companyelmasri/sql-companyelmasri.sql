@@ -1,4 +1,6 @@
-USE [companyelmasri];
+-- create database first ------------
+
+use [companyelmasri];
 
 -- remove comments on drop command if you have existing tables --------
 
@@ -71,7 +73,7 @@ CREATE TABLE employee (
 INSERT INTO employee VALUES ("Evan","E","Wallis","222222200","1958-01-16","134 Pelham, Milwaukee, WI","M","92000.00",null,"7");
 INSERT INTO employee VALUES ("Jared","D","James","111111100","1966-10-10","123 Peachtree, Atlanta, GA","M","85000.00",null,"6");
 INSERT INTO employee VALUES ("Alex","D","Freed","444444400","1950-10-09","4333 Pillsbury, Milwaukee, WI","M","89000.00",null,"7");
-INSERT INTO employee VALUES ("John","C","James","555555500","1975-06-30","7676 Bloomington,to, CA","M","81000.00",null,"6");
+INSERT INTO employee VALUES ("John","C","James","555555500","1975-06-30","7676 Bloomington, Sacramento, CA","M","81000.00",null,"6");
 INSERT INTO employee VALUES ("James","E","Borg","888665555","1927-11-10","450 Stone, Houston, TX","M","55000.00",null,"1");
 INSERT INTO employee VALUES ("Kim","C","Grace","333333300","1970-10-23","6677 Mills Ave, Sacramento, CA","F","79000.00",null,"6");
 INSERT INTO employee VALUES ("Bob","B","Bender","666666600","1968-04-17","8794 Garfield, Chicago, IL","M","96000.00",null,"8");
@@ -153,7 +155,7 @@ INSERT INTO project VALUES ("ProductZ","3","Houston","5");
 INSERT INTO project VALUES ("Computerization","10","Stafford","4");
 INSERT INTO project VALUES ("Reorganization","20","Houston","1");
 INSERT INTO project VALUES ("Newbenefits","30","Stafford","4");
-INSERT INTO project VALUES ("OperatingSy","61","Jacksonville","6");
+INSERT INTO project VALUES ("OperatingSystems","61","Jacksonville","6");
 INSERT INTO project VALUES ("DatabaseSystems","62","Birmingham","6");
 INSERT INTO project VALUES ("Middleware","63","Jackson","6");
 INSERT INTO project VALUES ("InkjetPrinters","91","Phoenix","7");

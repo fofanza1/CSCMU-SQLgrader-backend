@@ -17,6 +17,30 @@ const getTableList = dbName => {
   });
 };
 
+const checkExist = dbName => {
+  return new Promise((resolve, reject) => {
+    if(dbName === ''){
+      reject("Not Found USE database");
+    }
+    knex
+      .pgGrader("databases")
+      .where({
+        dbname: dbName
+      })
+      .select()
+      .then(data => {
+        if (data.length <= 0) {
+          resolve(data);
+        } else {
+          reject("databases Name is Exist");
+        }
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
 const getDataTable = (dbName, tableName) => {
   return new Promise((resolve, reject) => {
     const grader = knex.pgCustom(dbName);
@@ -68,12 +92,13 @@ const addDbNameintoServer = dabaseName => {
 const createDatabaseAllDbms = dbName => {
   return new Promise(async (resolve, reject) => {
     try {
+      console.log(dbName);
       await knex.mysqlAdmin.raw("CREATE DATABASE " + dbName);
       await knex.pgAdmin.raw("CREATE DATABASE " + dbName);
       await knex.mssqlAdmin.raw("CREATE DATABASE " + dbName);
       resolve("Successful Create Database");
     } catch (error) {
-      // dropAllDatabase(dbName);
+      dropAllDatabase(dbName);
       reject({ message: "Error Create Database", err: error });
     }
   });
@@ -99,6 +124,23 @@ const delDatabaseName = async dbName => {
   });
 };
 
+const getDatabaseNameById = anumber => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("databases")
+      .where({
+        dbid: dbid
+      })
+      .select("db")
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
 module.exports = {
   getTableList,
   getDataTable,
@@ -106,5 +148,7 @@ module.exports = {
   addDbNameintoServer,
   createDatabaseAllDbms,
   dropAllDatabase,
-  delDatabaseName
+  delDatabaseName,
+  getDatabaseNameById,
+  checkExist
 };
