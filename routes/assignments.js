@@ -137,8 +137,8 @@ router.post("/updatequestion", async (req, res, next) => {
   const aid = req.body.aid;
   const noofQuestion = req.body.noofquestion;
   const qdescription = req.body.qdescription;
-  var qsolution = req.body.qsolution;
-  qsolution = qsolution.replace('"', "'");
+  var q = req.body.qsolution;
+  var qsolution = q.replace(/"/g, "'");
   const score = req.body.score;
   const dbName = req.body.dbname;
   try {
@@ -187,6 +187,46 @@ router.post("/updatequestion", async (req, res, next) => {
       "[{}]",
       "utf8"
     );
+    console.log(error);
+    await res.status(500).send(error);
+  }
+});
+
+router.post("/delassignment", async (req, res, next) => {
+  const aid = req.body.aid;
+  try {
+    const delSubmitQuestion = await model.delSubmitQuestion(aid);
+    const delSubmitAssignmentScore = await model.delSubmitAssignmentScore(aid);
+    const delQuestion = await model.deleteQuestion(aid);
+    const delAssignment = await model.deleteAssignment(aid);
+    // const delFolder = await fs.rmdir("./assignments/" + aid + "/");
+    await res.json({ yes: delSubmitQuestion });
+  } catch (error) {
+    console.log(error);
+    await res.status(500).send(error);
+  }
+});
+
+router.post("/changestatustoclose", async (req, res, next) => {
+  const aid = req.body.aid;
+  try {
+    const chageStatus = await model.updateStatusAssignment(aid, "closed");
+    await res.json({ msg: "change status" });
+  } catch (error) {
+    console.log(error);
+    await res.status(500).send(error);
+  }
+});
+
+router.post("/updateassignment", async (req, res, next) => {
+  const aid = req.body.aid;
+  const anumber = req.body.anumber;
+  const aname = req.body.aname;
+  try {
+    const updateAssignment = model.updateAssignment(aid, anumber, aname);
+    // const delFolder = await fs.rmdir("./assignments/" + aid + "/");
+    await res.json({ yes: "yes" });
+  } catch (error) {
     console.log(error);
     await res.status(500).send(error);
   }

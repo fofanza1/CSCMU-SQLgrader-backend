@@ -12,6 +12,7 @@ var assignments = require("./routes/assignments");
 var tasks = require("./routes/tasks");
 var courses = require("./routes/courses");
 var students = require("./routes/students");
+var scores = require("./routes/scores");
 var cors = require("cors");
 var app = express();
 var types = require("pg").types;
@@ -98,6 +99,7 @@ app.use("/assignments", assignments);
 app.use("/tasks", tasks);
 app.use("/courses", courses);
 app.use("/students", students);
+app.use("/scores", scores);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

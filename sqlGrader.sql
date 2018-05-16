@@ -66,6 +66,7 @@ CREATE TABLE question_detail (
     qid SERIAL not null,
     qnumber integer not null,
     aid integer not null,
+    date timestamp,
     qdescription varchar(200),
     score integer not null,
     primary key (qid),
@@ -87,13 +88,27 @@ CREATE TABLE question_detail (
 
 CREATE TABLE student_submit_question (
     submitid SERIAL not null,
-    date timestamp,
     submittime integer,
-    aid integer not null,
-    qnumber integer not null,
-    submitscore integer not null,
-    studentid varchar(16) not null,
+    qid integer not null,
+    submitscore varchar(20) not null,
+    studentid varchar(9) not null,
     primary key (submitid),
+    foreign key (qid) references question_detail (qid),
+    foreign key (studentid) references students (studentid)
+);
+
+CREATE TABLE student_get_score_from_assignment (
+    scoreid SERIAL not null,
+    studentid varchar(9) not null,
+    aid integer not null,
+    score integer DEFAULT 0,
     foreign key (aid) references assignment_header (aid),
     foreign key (studentid) references students (studentid)
 );
+
+CREATE TABLE submit_question_in_assignment_score (
+    scoreid integer not null,
+    submitid integer not null,
+    PRIMARY KEY(submitid, scoreid)
+);
+

@@ -17,6 +17,30 @@ const getTableList = dbName => {
   });
 };
 
+const checkExist = dbName => {
+  return new Promise((resolve, reject) => {
+    if(dbName === ''){
+      reject("Not Found USE database");
+    }
+    knex
+      .pgGrader("databases")
+      .where({
+        dbname: dbName
+      })
+      .select()
+      .then(data => {
+        if (data.length <= 0) {
+          resolve(data);
+        } else {
+          reject("databases Name is Exist");
+        }
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
 const getDataTable = (dbName, tableName) => {
   return new Promise((resolve, reject) => {
     const grader = knex.pgCustom(dbName);
@@ -125,5 +149,6 @@ module.exports = {
   createDatabaseAllDbms,
   dropAllDatabase,
   delDatabaseName,
-  getDatabaseNameById
+  getDatabaseNameById,
+  checkExist
 };

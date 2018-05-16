@@ -2,7 +2,7 @@ var fs = require("mz/fs");
 var readline = require("readline");
 var officegen = require("officegen");
 const assignmentsModel = require("../model/assignment");
-const knex = require("../utils/connection");
+var knex = require("../utils/connection");
 
 var _ = require("lodash");
 
@@ -64,7 +64,16 @@ const splitAnswerAlongNumberOfQuestion = (
       ) {
         checkInsideQuestionAnswer = false;
         questionCount++;
-        stringQuestionAnswer = stringQuestionAnswer.replace('"', "'");
+        stringQuestionAnswer = stringQuestionAnswer.replace(/"/g, "'").trim();
+        var splitData = stringQuestionAnswer.split(" ");
+        if (splitData[0].toLowerCase() === "delete") {
+          if (stringQuestionAnswer.slice(-1) === ";") {
+            stringQuestionAnswer = stringQuestionAnswer.replace(/;/g, "");
+          }
+          stringQuestionAnswer += " returning * ;";
+        } else if (stringQuestionAnswer.slice(-1) !== ";") {
+          stringQuestionAnswer += ";";
+        }
         arrayAnswer.push(stringQuestionAnswer);
         stringQuestionAnswer = "";
       } else if (checkInsideQuestionAnswer) {
@@ -74,6 +83,7 @@ const splitAnswerAlongNumberOfQuestion = (
     }
     // console.log(arrayAnswer);
     if (arrayAnswer.length != noOfQuestion) {
+      // console.log(arrayAnswer);
       reject("Format Submit File Not Correct");
     } else {
       resolve(arrayAnswer);
@@ -87,19 +97,25 @@ const getAnswerSolutionMysql = (databaseName, solution) => {
     if (solution === "") {
       reject({ time: Date.now() - dateStart, err: "Syntax Error" });
     }
+    var knex = require("../utils/connection").mysqlCustom(databaseName);
     knex
-      .mysqlCustom(databaseName)
       .raw(`BEGIN;${solution}ROLLBACK;`)
       .then(data => {
         // console.log(JSON.parse(JSON.stringify(sol)));
         for (let sol of data[0]) {
           if (_.isArray(sol)) {
+            // console.log(sol);
             resolve({ time: Date.now() - dateStart, data: sol });
           }
         }
       })
       .catch(error => {
+        // console.log("eiei");
         reject({ time: Date.now() - dateStart, err: "Syntax Error" });
+      })
+      .finally(function() {
+        // To close the connection pool
+        knex.destroy();
       });
   });
 };
@@ -110,12 +126,14 @@ const getAnswerSolutionPg = (databaseName, solution) => {
     if (solution === "") {
       reject({ time: Date.now() - dateStart, err: "Syntax Error" });
     }
+    var knex = require("../utils/connection").pgCustom(databaseName);
     knex
-      .pgCustom(databaseName)
       .raw(`BEGIN;${solution}ROLLBACK;`)
       .then(data => {
-        data.shift(); // Removes the first element from an array and returns only that element.
-        data.pop(); // Removes the last element from an array and returns only that element.
+        data.shift(); // Removes the first element from an array and returns
+        // only that element.
+        data.pop(); // Removes the last element from an array and returns
+        // only that element.
         for (let sol of data) {
           if (sol.rows.length > 0) {
             resolve({ time: Date.now() - dateStart, data: sol.rows });
@@ -125,6 +143,10 @@ const getAnswerSolutionPg = (databaseName, solution) => {
       .catch(error => {
         console.log(error);
         reject({ time: Date.now() - dateStart, err: "Syntax Error" });
+      })
+      .finally(function() {
+        // To close the connection pool
+        knex.destroy();
       });
   });
 };
@@ -135,8 +157,8 @@ const getAnswerSolutionMssql = (databaseName, solution) => {
     if (solution === "") {
       reject({ time: Date.now() - dateStart, err: "Syntax Error" });
     }
+    var knex = require("../utils/connection").mssqlCustom(databaseName);
     knex
-      .mssqlCustom(databaseName)
       .raw(`BEGIN TRANSACTION;${solution}ROLLBACK;`)
       .then(data => {
         // console.log(data);
@@ -145,6 +167,10 @@ const getAnswerSolutionMssql = (databaseName, solution) => {
       .catch(error => {
         // console.log(error);
         reject({ time: Date.now() - dateStart, err: "Syntax Error" });
+      })
+      .finally(function() {
+        // To close the connection pool
+        knex.destroy();
       });
   });
 };
@@ -176,6 +202,7 @@ const getAnswerSolItem = (aid, index) => {
       "utf8"
     );
     data = JSON.parse(data);
+    // console.log(data);
     data = data.map(x => JSON.parse(x));
     await resolve(data);
   });
@@ -206,7 +233,7 @@ const getAnswerByStudent = (dbName, arrayData, dbms, aid) => {
   return new Promise(async (resolve, reject) => {
     var arrayAnswerByStudent = [];
     var questionNumber = 1;
-    var timeExec = 0;
+    var timeExec = [];
     for (let data of arrayData) {
       var res = data.split(" ");
       if (
@@ -215,17 +242,23 @@ const getAnswerByStudent = (dbName, arrayData, dbms, aid) => {
       ) {
         var sol = await getSolItem(aid, questionNumber);
         var index = sol.indexOf(";");
+        console.log("index" + index);
         var selectAfterCRUD = sol.substring(index + 1).trim();
-        // console.log(selectAfterCRUD);
+        if (!selectAfterCRUD) {
+          selectAfterCRUD = "null;";
+        }
         data = data + selectAfterCRUD;
-        console.log(data);
+        console.log("data2" + data);
+        // console.log(data);
       }
       // console.log(arrayAnswerByStudent);
       try {
+        // console.log(questionNumber);
         if (dbms === "mysql") {
           var answer = await getAnswerSolutionMysql(dbName, data);
         } else if (dbms === "pg") {
           var answer = await getAnswerSolutionPg(dbName, data);
+          console.log(answer);
         } else if (dbms === "sql") {
           var answer = await getAnswerSolutionMssql(dbName, data);
         }
@@ -233,10 +266,10 @@ const getAnswerByStudent = (dbName, arrayData, dbms, aid) => {
         arrayAnswerByStudent = await arrayAnswerByStudent.concat(
           JSON.stringify(answer.data)
         );
-        timeExec = timeExec + answer.time;
+        timeExec.push(answer.time);
       } catch (error) {
         arrayAnswerByStudent = await arrayAnswerByStudent.concat(error.err);
-        timeExec = timeExec + error.time;
+        timeExec.push(error.time);
       }
       questionNumber++;
     }
@@ -245,7 +278,7 @@ const getAnswerByStudent = (dbName, arrayData, dbms, aid) => {
   });
 };
 
-const getCompareAnswer = (aid, answerUser) => {
+const getCompareAnswer = (aid, spiltDataUser, answerUser) => {
   return new Promise(async (resolve, reject) => {
     var questionNumber = 1;
     var i = 0;
@@ -253,33 +286,67 @@ const getCompareAnswer = (aid, answerUser) => {
     var totalscore = 0;
     var score = await assignmentsModel.getScoresByAssignmentId(aid);
     // console.log(score);
+    // console.log(answerUser);
     for (let solUser of answerUser) {
+      if (solUser === "Syntax Error") {
+        outputArray.push("Syntax Error");
+        checkEqual = true;
+        i = i + 1;
+        questionNumber = questionNumber + 1;
+        continue;
+      }
+      console.log(solUser);
+      solUser = JSON.parse(solUser);
+      solUser = solUser.map(x =>
+        _.mapKeys(x, function(v, k) {
+          return k.toLowerCase();
+        })
+      );
+      // console.log(solUser);
       var allDataSol = await getAnswerSolItem(aid, questionNumber);
+      // console.log(allDataSol);
+      var solTeacher = await getSolItem(aid, questionNumber);
       var checkEqual = false;
       for (let solAnswer of allDataSol) {
-        // console.log(
-        //   JSON.parse(solUser) +
-        //     "\n ------------------- \n" +
-        //     solAnswer +
-        //     "\nend\n"
-        // );
-        // console.log(JSON.parse(solUser));
-        // console.log(solAnswer);
-        // console.log("-----------------");
+        // console.log("--------------");
+        if (!solAnswer) {
+          continue;
+        }
+        solAnswer = solAnswer.map(x =>
+          _.mapKeys(x, function(v, k) {
+            return k.toLowerCase();
+          })
+        );
+        // solAnswer = _.mapKeys(solAnswer, function(v, k) {
+        //   return k.toLowerCase();
+        // });
         if (solUser === "Syntax Error") {
           outputArray.push("Syntax Error");
           checkEqual = true;
           break;
-        } else if (_.isEqual(JSON.parse(solUser), solAnswer)) {
+
+          // _.isEqual(solUser, solAnswer);
+        } else if (
+          _(solUser)
+            .differenceWith(solAnswer, _.isEqual)
+            .isEmpty()
+        ) {
+          if (solTeacher.toLowerCase().includes("order by")) {
+            console.log(solTeacher);
+            if (_.isEqual(solUser, solAnswer)) {
+              totalscore = totalscore + score[i].score;
+              outputArray.push(score[i].score.toString());
+              checkEqual = true;
+            } else {
+              checkEqual = false;
+            }
+            break;
+          }
           totalscore = totalscore + score[i].score;
           outputArray.push(score[i].score.toString());
           checkEqual = true;
-          console.log("eiei");
           break;
         }
-        // } else {
-        //   outputArray.push("Output is incorrect");
-        // }
       }
       if (!checkEqual) {
         outputArray.push("Output is incorrect");
@@ -305,6 +372,21 @@ const getCompareAnswer = (aid, answerUser) => {
   });
 };
 
+const scoreMergeAssignment = (dataAssignment, dataScore) => {
+  return new Promise(async (resolve, reject) => {
+    var i = 0;
+    for (let dataA of dataAssignment) {
+      for (let dataS of dataScore) {
+        if (dataA.aid === dataS.aid) {
+          dataAssignment[i].score = dataS.max;
+        }
+      }
+      i = i + 1;
+    }
+    await resolve(dataAssignment);
+  });
+};
+
 module.exports = {
   checkSameAnswer: checkSameAnswer,
   readlineAnswerSubmit: readlineAnswerSubmit,
@@ -313,5 +395,6 @@ module.exports = {
   getAnswerSolData: getAnswerSolData,
   getAnswerByStudent: getAnswerByStudent,
   getCompareAnswer: getCompareAnswer,
-  getSolItem: getSolItem
+  getSolItem: getSolItem,
+  scoreMergeAssignment: scoreMergeAssignment
 };

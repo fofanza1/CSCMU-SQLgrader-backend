@@ -140,13 +140,106 @@ const getCourseById = cid => {
   });
 };
 
+const getCourseByAssignmentId = aid => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("assignment_header")
+      .where("aid", aid)
+      .select("cid")
+      .then(data => {
+        resolve(data[0]);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const getStudentInCourse = cid => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("students_in_courses")
+      .where("cid", cid)
+      .join(
+        "students",
+        "students.studentid",
+        "=",
+        "students_in_courses.studentid"
+      )
+      .select("students.studentid", "students.fullname")
+      .orderBy("students.studentid")
+      .then(data => {
+        if (data) {
+          data.map(a => (a.score = 0));
+        }
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const getCourseExist = (ccode, semester, year) => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("courses")
+      .where({
+        ccode: ccode,
+        semester: semester,
+        year: year
+      })
+      .select()
+      .then(data => {
+        console.log(data);
+        if (data.length <= 0) {
+          resolve(data);
+        } else {
+          reject("Course is Exist");
+        }
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const getCourseExistUpdate = (cid, ccode, semester, year) => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("courses")
+      .where({
+        ccode: ccode,
+        semester: semester,
+        year: year
+      })
+      .andWhere("cid", "!=", cid)
+      .select()
+      .then(data => {
+        console.log(data);
+        if (data.length <= 0) {
+          resolve(data);
+        } else {
+          reject("Course is Exist");
+        }
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
 module.exports = {
   addCourse: addCourse,
   viewAllCourse: viewAllCourse,
   deleteCourse: deleteCourse,
   getCoursesByStudentId: getCoursesByStudentId,
   getCourseById: getCourseById,
+  getCourseByAssignmentId: getCourseByAssignmentId,
   getOpeningCourse: getOpeningCourse,
+  getStudentInCourse: getStudentInCourse,
   updateCourseStatus: updateCourseStatus,
-  updateCourseData: updateCourseData
+  updateCourseData: updateCourseData,
+  getCourseExist: getCourseExist,
+  getCourseExistUpdate: getCourseExistUpdate
 };

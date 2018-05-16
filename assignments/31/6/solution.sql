@@ -1,0 +1,1 @@
+SELECT employees.firstName,employees.lastName,offices.city,Supervisor.firstName,Supervisor.lastName,S_office.city FROM employees,employees AS Supervisor,offices,offices AS S_office WHERE (employees.officeCode=offices.officeCode AND Supervisor.officeCode = S_office.officeCode) AND S_office.city != offices.city AND employees.reportsTo=Supervisor.employeeNumber;

@@ -114,11 +114,16 @@ const genDocx = (courseData, anumber) => {
       bold: true,
       underline: true
     });
-    await pObj.addText(`${dataAssignment[0].duedate}`, {
-      font_face: "TH SarabunPSK",
-      font_size: 16,
-      bold: true
-    });
+    await pObj.addText(
+      `${moment(dataAssignment[0].duedate).format(
+        "dddd  Do MMMM YYYY, HH:mm:ss"
+      )}`,
+      {
+        font_face: "TH SarabunPSK",
+        font_size: 16,
+        bold: true
+      }
+    );
     var pObj = docx.createP();
     await pObj.addText(`คะแนนรวม`, {
       font_face: "TH SarabunPSK",
@@ -202,12 +207,11 @@ const checkDataBeforeOpening = (aid, noofquestion) => {
     } else {
       var dataAssignment = await model.getAssignmentByAssignmentId(aid);
       var startDate = moment(dataAssignment.startdate).format(
-        "MMMM Do YYYY, h:mm:ss"
+        "MM-DD-YYYY,h:mm:ss"
       );
-      var dueDate = moment(dataAssignment.duedate).format(
-        "MMMM Do YYYY, h:mm:ss"
-      );
-      var DateNow = moment().format("MMMM Do YYYY, h:mm:ss");
+      var dueDate = moment(dataAssignment.duedate).format("MM-DD-YYYY,h:mm:ss");
+      var DateNow = moment().format("MM-DD-YYYY,h:mm:ss");
+      console.log(startDate, DateNow, dueDate);
       if (DateNow < startDate) {
         const setStartDate = await model.setOpeningAssignemnt(
           aid,
@@ -225,6 +229,7 @@ const checkDataBeforeOpening = (aid, noofquestion) => {
           dataAssignment.duedate
         );
       } else {
+        console.log("testEEEEEEEEEEEEEEEEEEE");
         const setOpening = await model.updateStatusAssignment(aid, "closed");
       }
       resolve({ yes: "Yes" });

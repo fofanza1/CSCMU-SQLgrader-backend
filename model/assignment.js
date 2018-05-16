@@ -189,6 +189,63 @@ const getDataAssignment = cid => {
       .join("databases", "assignment_header.dbid", "=", "databases.dbid")
       .where("cid", cid)
       .select()
+      .orderBy("anumber")
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const deleteQuestion = aid => {
+  console.log(aid);
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("question_detail")
+      .where({
+        aid: aid
+      })
+      .returning("*")
+      .del()
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const delSubmitAssignmentScore = aid => {
+  console.log(aid);
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("student_get_score_from_assignment")
+      .where({
+        aid: aid
+      })
+      .returning("*")
+      .del()
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const deleteAssignment = aid => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("assignment_header")
+      .where({
+        aid: aid
+      })
+      .returning("*")
+      .del()
       .then(data => {
         resolve(data);
       })
@@ -209,7 +266,7 @@ const getDataAssignmentByNumber = (cid, anumber) => {
       })
       .select()
       .then(data => {
-        console.log(data);
+        // console.log(data);
         resolve(data);
       })
       .catch(error => {
@@ -237,24 +294,31 @@ const getDataQuestion = (aid, qnumber) => {
 };
 
 const getAnswerSolutionMysql = (databaseName, solution) => {
+  var knex = require("../utils/connection").mysqlCustom(databaseName);
   return new Promise((resolve, reject) => {
-    console.log(solution);
     if (solution === "") {
       resolve("");
     }
     knex
-      .mysqlCustom(databaseName)
       .raw(`BEGIN;${solution}ROLLBACK;`)
+      .timeout(10000, { cancel: true })
       .then(data => {
+        // console.log("MYsql");
+        // console.log(data[0]);
         // console.log(JSON.parse(JSON.stringify(sol)));
         for (let sol of data[0]) {
           if (_.isArray(sol)) {
             resolve(sol);
           }
         }
+        resolve([]);
       })
       .catch(error => {
         reject(error);
+      })
+      .finally(function() {
+        // To close the connection pool
+        knex.destroy();
       });
   });
 };
@@ -264,10 +328,12 @@ const getAnswerSolutionPg = (databaseName, solution) => {
     if (solution === "") {
       resolve("");
     }
+    var knex = require("../utils/connection").pgCustom(databaseName);
     knex
-      .pgCustom(databaseName)
       .raw(`BEGIN;${solution}ROLLBACK;`)
       .then(data => {
+        // console.log("pg");
+        // console.log(data);
         data.shift(); // Removes the first element from an array and returns only that element.
         data.pop(); // Removes the last element from an array and returns only that element.
         for (let sol of data) {
@@ -275,9 +341,14 @@ const getAnswerSolutionPg = (databaseName, solution) => {
             resolve(sol.rows);
           }
         }
+        resolve([]);
       })
       .catch(error => {
-        reject(error);
+        resolve("");
+      })
+      .finally(function() {
+        // To close the connection pool
+        knex.destroy();
       });
   });
 };
@@ -287,8 +358,8 @@ const getAnswerSolutionMssql = (databaseName, solution) => {
     if (solution === "") {
       resolve("");
     }
+    var knex = require("../utils/connection").mssqlCustom(databaseName);
     knex
-      .mssqlCustom(databaseName)
       .raw(`BEGIN TRANSACTION;${solution}ROLLBACK;`)
       .then(data => {
         resolve(data);
@@ -296,6 +367,10 @@ const getAnswerSolutionMssql = (databaseName, solution) => {
       .catch(error => {
         console.log(error);
         resolve("");
+      })
+      .finally(function() {
+        // To close the connection pool
+        knex.destroy();
       });
   });
 };
@@ -330,6 +405,42 @@ const getAssignmentByAssignmentId = aid => {
   });
 };
 
+const delSubmitQuestion = aid => {
+  return new Promise(async (resolve, reject) => {
+    knex
+      .pgGrader("question_detail")
+      .where("aid", aid)
+      .select("qid")
+      .then(data => {
+        for (let d of data) {
+          delSubmitQuestionDetail(d.qid);
+        }
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const delSubmitQuestionDetail = qid => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("student_submit_question")
+      .where({
+        qid: qid
+      })
+      .returning("*")
+      .del()
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
 const getScoresByAssignmentId = aid => {
   return new Promise((resolve, reject) => {
     knex
@@ -351,6 +462,21 @@ const updateStatusAssignment = (aid, newStatus) => {
       .pgGrader("assignment_header")
       .where("aid", aid)
       .update("astatus", newStatus)
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+};
+
+const updateAssignment = (aid, anumber, aname) => {
+  return new Promise((resolve, reject) => {
+    knex
+      .pgGrader("assignment_header")
+      .where("aid", aid)
+      .update({ anumber: anumber, aname: aname })
       .then(data => {
         resolve(data);
       })
@@ -401,5 +527,10 @@ module.exports = {
   setOpeningAssignemnt: setOpeningAssignemnt,
   setClosedAssignemnt: setClosedAssignemnt,
   getAssignmentByAssignmentId: getAssignmentByAssignmentId,
-  updateStatusAssignment: updateStatusAssignment
+  updateStatusAssignment: updateStatusAssignment,
+  deleteQuestion: deleteQuestion,
+  deleteAssignment: deleteAssignment,
+  delSubmitAssignmentScore: delSubmitAssignmentScore,
+  delSubmitQuestion: delSubmitQuestion,
+  updateAssignment: updateAssignment
 };

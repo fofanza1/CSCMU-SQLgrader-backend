@@ -40,7 +40,8 @@ const mysqlCustom = databaseName => {
       //   }
       //   return next();
       // }
-    }
+    },
+    pool: { min: 0, max: 100 }
   });
 };
 
@@ -54,7 +55,8 @@ const mssqlCustom = databaseName => {
       database: databaseName,
       multipleStatements: true,
       timezone: "Asia/Bangkok"
-    }
+    },
+    pool: { min: 0, max: 100 }
   });
 };
 
@@ -77,7 +79,8 @@ const pgCustom = databaseName => {
       password: "cmusqlgrader",
       database: databaseName,
       multipleStatements: true
-    }
+    },
+    pool: { min: 0, max: 100 }
   });
 };
 

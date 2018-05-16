@@ -9,6 +9,7 @@ router.post("/addcourse", async (req, res, next) => {
   const year = req.body.year;
   const status = "opening";
   try {
+    const checkExist = await model.getCourseExist(ccode, semester, year);
     const data = await model.addCourse(ccode, cname, semester, year, status);
     await res.status(200).send({ msg: "Create Course Successful", data: data });
   } catch (error) {
@@ -26,6 +27,12 @@ router.post("/updatecourse", async (req, res, next) => {
   const cstatus = req.body.cstatus;
   try {
     // const data = await model.getCourseById(cid);
+    const checkExist = await model.getCourseExistUpdate(
+      cid,
+      ccode,
+      semester,
+      year
+    );
     const updateData = await model.updateCourseData(
       cid,
       ccode,

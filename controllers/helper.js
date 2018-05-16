@@ -49,6 +49,8 @@ const searchAndEditDBFile = () => {
         // const dataAssignment = model.getDatabaseAssignment();
         // if(dbName.in)
       } else if (lineSplit.length > 1) {
+        line = line.replace('"0000-00-00"', "NULL");
+        line = line.replace("'0000-00-00'", "NULL");
         if (lineSplit[1].toLowerCase() !== "database") {
           await myInterface.output.write(line + "\n");
         }
