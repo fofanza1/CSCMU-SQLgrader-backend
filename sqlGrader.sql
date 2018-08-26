@@ -13,6 +13,7 @@ CREATE TABLE courses (
     semester char(1),
     year char(4),
     cstatus varchar(7),
+    numberofsection integer,
     primary key (cid)
 );
 
@@ -43,6 +44,7 @@ CREATE TABLE students (
 CREATE TABLE students_in_courses (
     studentid varchar(9) not null references students (studentid),
     cid integer not null references courses (cid),
+    section integer,
     PRIMARY KEY(studentid, cid)
 );
 

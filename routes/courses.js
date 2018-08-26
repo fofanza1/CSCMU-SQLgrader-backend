@@ -7,10 +7,18 @@ router.post("/addcourse", async (req, res, next) => {
   const cname = req.body.cname;
   const semester = req.body.semester;
   const year = req.body.year;
+  const numberofsection = parseInt(req.body.section);
   const status = "opening";
   try {
     const checkExist = await model.getCourseExist(ccode, semester, year);
-    const data = await model.addCourse(ccode, cname, semester, year, status);
+    const data = await model.addCourse(
+      ccode,
+      cname,
+      semester,
+      year,
+      status,
+      numberofsection
+    );
     await res.status(200).send({ msg: "Create Course Successful", data: data });
   } catch (error) {
     console.log(error);
@@ -57,6 +65,15 @@ router.get("/getallcourse", async (req, res, next) => {
   }
 });
 
+router.get("/getsection/:courseid", async (req, res, next) => {
+  try {
+    const data = await model.getCourseSection(req.params.courseid);
+    await res.status(200).send(data[0]);
+  } catch (error) {
+    await res.status(500).send(error);
+  }
+});
+
 router.get("/getopeningcourse", async (req, res, next) => {
   try {
     const data = await model.getOpeningCourse();
@@ -75,9 +92,7 @@ router.post("/updatecoursestatus", async (req, res, next) => {
     } else {
       const data = await model.updateCourseStatus(cid, "opening");
     }
-    res.send({
-      msg: "Update Course Status"
-    });
+    res.send({ msg: "Update Course Status" });
   } catch (error) {
     console.log(error);
     await res.send(error).status(500);

@@ -10,6 +10,7 @@ router.post("/registerstudent", async (req, res, next) => {
   const studentid = req.body.studentid;
   const fullname = req.body.fullname;
   const cid = req.body.cid;
+  const section = req.body.section;
   try {
     const hashPassword = await controller.hashPassword(password);
     console.log(hashPassword);
@@ -19,7 +20,11 @@ router.post("/registerstudent", async (req, res, next) => {
       fullname
     );
     console.log(addStudent);
-    const addStudentInCourse = await model.addStudentInCourse(studentid, cid);
+    const addStudentInCourse = await model.addStudentInCourse(
+      studentid,
+      cid,
+      section
+    );
     res.status(200).send({ yes: "yes" });
   } catch (error) {
     console.log(error);
@@ -40,11 +45,13 @@ router.post("/login", async (req, res, next) => {
     delete data.password;
     const jwtToken = await controller.genToken(data);
     const courseId = await courseModel.getCoursesByStudentId(studentid);
-    res.status(200).send({
-      token: jwtToken,
-      name: data.fullname,
-      courseid: courseId[0].cid
-    });
+    res
+      .status(200)
+      .send({
+        token: jwtToken,
+        name: data.fullname,
+        courseid: courseId[0].cid
+      });
   } catch (error) {
     console.log(error);
     res.status(500).send("login failed");

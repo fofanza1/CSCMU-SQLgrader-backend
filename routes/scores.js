@@ -9,13 +9,30 @@ var controller = require("../controllers/score");
 router.get("/getallscore/:aid", async (req, res, next) => {
   try {
     const getCorse = await courseModel.getCourseByAssignmentId(req.params.aid);
-    console.log(getCorse);
     const getAllScore = await model.getAllScore(req.params.aid);
-    console.log(getAllScore);
     const getAllDataStudentINCourse = await courseModel.getStudentInCourse(
       getCorse.cid
     );
-    console.log(getAllDataStudentINCourse);
+    const assignScore = await controller.assignScore(
+      getAllScore,
+      getAllDataStudentINCourse
+    );
+    console.log(assignScore);
+    res.status(200).send(assignScore);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error);
+  }
+});
+
+router.get("/getallscore/:aid/:section", async (req, res, next) => {
+  try {
+    const getCorse = await courseModel.getCourseByAssignmentId(req.params.aid);
+    const getAllScore = await model.getAllScore(req.params.aid);
+    const getAllDataStudentINCourse = await courseModel.getStudentInCourseBySection(
+      getCorse.cid,
+      req.params.section
+    );
     const assignScore = await controller.assignScore(
       getAllScore,
       getAllDataStudentINCourse
